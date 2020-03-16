@@ -1,7 +1,8 @@
 #include "Parser.h"
 #include <set>
 #include <algorithm>
-
+#include "Parser.h"
+#include <iostream>
 // 求非终结符的first集
 void Parser::getFirstSetofNonterminal() {
 	int change = 0;
@@ -99,7 +100,7 @@ set<string> Parser::getFirstSetofStrings(vector<string>& strings)
 }
 
 // 进行语法分析形成Action和Goto表
-void Parser::parse()
+void Parser::creatTable()
 {
 	
 	Items itms_tmp;
@@ -152,6 +153,42 @@ void Parser::parse()
 			}
 		}
 
+	}
+}
+
+void Parser::parse(vector<string>& input) 
+{
+	stateStack.push(0);
+	symbolStack.push(end);
+	int index = 0;
+	int errorflag = 0;
+	while (errorflag == 0) {
+		pair<int, int> action = actionList[stateStack.top()][input[index]];
+		Production reducedProd;
+		switch (action.first)
+		{
+		case ACC:
+			cout << "parse succeed" << endl;
+			return;
+		case REDUCE:
+			reducedProd = prods[action.second];
+			for (int i = 0; i < reducedProd.right.size(); i++) {
+				stateStack.pop();
+				symbolStack.pop();
+			}
+			symbolStack.push(reducedProd.left);
+			stateStack.push(gotoList[stateStack.top()][symbolStack.top()]);
+			break;
+		case SHIFT:
+			symbolStack.push(input[index]);
+			stateStack.push(action.second);
+			index++;
+			break;
+		default:
+			cout << "error" << endl;
+			errorflag = 1;
+			return;
+		}	
 	}
 }
 

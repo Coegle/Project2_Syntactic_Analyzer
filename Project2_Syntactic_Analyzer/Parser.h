@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <stack>
 using namespace std;
 
 struct Production// 产生式
@@ -45,7 +46,9 @@ struct Items // 项目集
 	}
 };
 
-
+const int ACC = 1;
+const int SHIFT = 2;
+const int REDUCE = 3;
 class Parser
 {
 
@@ -61,14 +64,15 @@ public:
 	// map<string, map<int, int>> adjList; // 项目集转换
 	map<int, map<string, int>> gotoList;
 	map<int, map<string, pair<int, int>>> actionList; // 当前 输入 
-	const int ACC = 1;
-	const int SHIFT = 2;
-	const int REDUCE = 3;
+
+	stack<string> symbolStack; // 符号栈
+	stack<int> stateStack; // 状态栈
 
 	void getFirstSetofNonterminal(); // 获取非终结符的 first 集
 	bool isTerminal(string& s);
 	set<string> getFirstSetofStrings(vector<string>& strings);
-	void parse();
+	void parse(vector<string>& input);
+	void creatTable();
 	Items getNextItems(Items& preItems, string token);
 	Items getClousureofItems(Items items); // 求项目集的闭包
 };
