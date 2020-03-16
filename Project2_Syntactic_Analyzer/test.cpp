@@ -8,58 +8,54 @@ using namespace std;
 int main() {
 	Parser p;
 	p.blank = "$";
-	p.terminal.push_back("n");
-	p.terminal.push_back("(");
-	p.terminal.push_back("+");
-	p.terminal.push_back("*");
+	p.extendStartNonterminal = "S'";
+	p.end = "#";
+	p.terminal.push_back("a");
+	p.terminal.push_back("b");
+	p.terminal.push_back("c");
+	p.terminal.push_back("d");
+	p.terminal.push_back("e");
 
-	production prod1;
-	prod1.left = "E";
-	prod1.right.push_back("T");
-	prod1.right.push_back("R");
+
+	Production prod1;
+	prod1.left = "S'";
+	prod1.right.push_back("S");
 	p.prods.push_back(prod1);
 
-	production prod2;
-	prod2.left = "R";
-	prod2.right.push_back("$");
+	Production prod2;
+	prod2.left = "S";
+	prod2.right.push_back("a");
+	prod2.right.push_back("A");
+	prod2.right.push_back("d");
 	p.prods.push_back(prod2);
 
-	production prod3;
-	prod3.left = "R";
-	prod3.right.push_back("+");
-	prod3.right.push_back("E");
+	Production prod3;
+	prod3.left = "S";
+	prod3.right.push_back("b");
+	prod3.right.push_back("A");
+	prod3.right.push_back("c");
 	p.prods.push_back(prod3);
 
-	production prod4;
-	prod4.left = "T";
-	prod4.right.push_back("F");
-	prod4.right.push_back("S");
+	Production prod4;
+	prod4.left = "S";
+	prod4.right.push_back("a");
+	prod4.right.push_back("e");
+	prod4.right.push_back("c");
 	p.prods.push_back(prod4);
 
-	production prod5;
+	Production prod5;
 	prod5.left = "S";
-	prod5.right.push_back("$");
+	prod5.right.push_back("b");
+	prod5.right.push_back("e");
+	prod5.right.push_back("d");
 	p.prods.push_back(prod5);
 
-	production prod6;
-	prod6.left = "S";
-	prod6.right.push_back("*");
-	prod6.right.push_back("T");
+	Production prod6;
+	prod6.left = "A";
+	prod6.right.push_back("e");
 	p.prods.push_back(prod6);
 
-	production prod7;
-	prod7.left = "F";
-	prod7.right.push_back("n");
-	p.prods.push_back(prod7);
-
-	production prod8;
-	prod8.left = "F";
-	prod8.right.push_back("(");
-	prod8.right.push_back("E");
-	prod8.right.push_back(")");
-	p.prods.push_back(prod8);
-
-
 	p.getFirstSetofNonterminal();
+	p.parse();
 	return 0;
 }
