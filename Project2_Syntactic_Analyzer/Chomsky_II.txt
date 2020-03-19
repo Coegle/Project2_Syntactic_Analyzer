@@ -1,3 +1,20 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 translation_unit	: external_decl
 			| translation_unit external_decl
 			;

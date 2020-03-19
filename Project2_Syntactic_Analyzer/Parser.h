@@ -45,7 +45,7 @@ struct Items // 项目集
 		return !(*this == itms);
 	}
 };
-
+std::vector<std::string> split(std::string str, std::string pattern);
 const int ACC = 1;
 const int SHIFT = 2;
 const int REDUCE = 3;
@@ -64,6 +64,7 @@ public:
 	// map<string, map<int, int>> adjList; // 项目集转换
 	map<int, map<string, int>> gotoList;
 	map<int, map<string, pair<int, int>>> actionList; // 当前 输入 
+	string spliter;
 
 	stack<string> symbolStack; // 符号栈
 	stack<int> stateStack; // 状态栈
@@ -71,9 +72,10 @@ public:
 	void getFirstSetofNonterminal(); // 获取非终结符的 first 集
 	bool isTerminal(string& s);
 	set<string> getFirstSetofStrings(vector<string>& strings);
-	void parse(vector<string>& input);
-	void creatTable();
+	void parse(const char* tokenListPath);
+	void creatTable(); // 进行语法分析形成Action和Goto表
 	Items getNextItems(Items& preItems, string token);
-	Items getClousureofItems(Items items); // 求项目集的闭包
+	void getClousureofItems(Items& items); // 求项目集的闭包
+	void inputBNF(const char* BNFPath); // 输入文法的二型文法
 };
 

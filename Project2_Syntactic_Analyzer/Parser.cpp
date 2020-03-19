@@ -1,8 +1,32 @@
 #include "Parser.h"
 #include <set>
 #include <algorithm>
+#include <fstream>
 #include "Parser.h"
 #include <iostream>
+//字符串分割函数
+std::vector<std::string> split(std::string str, std::string pattern)
+{
+	std::string::size_type pos;
+	std::vector<std::string> result;
+	str += pattern;//扩展字符串以方便操作
+	int size = str.size();
+
+	for (int i = 0; i < size; i++)
+	{
+		pos = str.find(pattern, i);
+		if (pos < size)
+		{
+			std::string s = str.substr(i, pos - i);
+			i = pos + pattern.size() - 1;
+			if (s.size() != 0) {
+				result.push_back(s);
+			}
+		}
+	}
+	return result;
+}
+
 // 求非终结符的first集
 void Parser::getFirstSetofNonterminal() {
 	int change = 0;
@@ -115,7 +139,7 @@ void Parser::creatTable()
 		}
 	}
 	itms_tmp.items.push_back(itm_tmp);
-	itms_tmp = getClousureofItems(itms_tmp);
+	getClousureofItems(itms_tmp);
 	itemsList.push_back(itms_tmp);
 
 	for (int i = 0; i<itemsList.size(); i++) { // 对于任一项目集
@@ -128,7 +152,9 @@ void Parser::creatTable()
 				// shift
 				actionList[i][terminal[j]] = make_pair(SHIFT, itemsList.size() - 1);
 			}
-			
+			else {
+				actionList[i][terminal[j]] = make_pair(SHIFT, hasExisted - itemsList.begin());
+			}
 		}
 		for (auto it_nontml = firstofNonterminal.begin(); it_nontml != firstofNonterminal.end(); it_nontml++) { // 对所有非终结符
 			Items nextItms = getNextItems(itemsList[i], it_nontml->first);
@@ -138,6 +164,8 @@ void Parser::creatTable()
 				itemsList.push_back(nextItms);
 				// goto
 				gotoList[i][it_nontml->first] = itemsList.size() - 1;
+			} else {
+				gotoList[i][it_nontml->first] = hasExisted - itemsList.begin();
 			}
 			
 		}
@@ -156,19 +184,34 @@ void Parser::creatTable()
 	}
 }
 
-void Parser::parse(vector<string>& input) 
+void Parser::parse(const char* tokenListPath) 
 {
+	ifstream fin;
+	fin.open(tokenListPath);
+	if (fin.fail()) {
+		cout << "Could not open source file!" << endl;
+		exit(0);
+	}
+	string line;
+	
+
 	stateStack.push(0);
 	symbolStack.push(end);
 	int index = 0;
 	int errorflag = 0;
+
+	vector<string> substr;
+	getline(fin, line);
+	substr = split(line, " ");
+
 	while (errorflag == 0) {
-		pair<int, int> action = actionList[stateStack.top()][input[index]];
+		pair<int, int> action = actionList[stateStack.top()][substr[1]];
 		Production reducedProd;
 		switch (action.first)
 		{
 		case ACC:
 			cout << "parse succeed" << endl;
+			fin.close();
 			return;
 		case REDUCE:
 			reducedProd = prods[action.second];
@@ -180,13 +223,17 @@ void Parser::parse(vector<string>& input)
 			stateStack.push(gotoList[stateStack.top()][symbolStack.top()]);
 			break;
 		case SHIFT:
-			symbolStack.push(input[index]);
+			symbolStack.push(substr[1]);
 			stateStack.push(action.second);
-			index++;
+			
+			getline(fin, line);
+			substr = split(line, " ");
+			
 			break;
 		default:
-			cout << "error" << endl;
+			cout << "error in line" << substr[0] << endl;
 			errorflag = 1;
+			fin.close();
 			return;
 		}	
 	}
@@ -211,12 +258,12 @@ Items Parser::getNextItems(Items& preItems, string token)
 		}
 	}
 	// 求闭包直到状态稳定
-	nextItms = getClousureofItems(nextItms);
+	getClousureofItems(nextItms);
 	return nextItms;
 }
 
 // 求项目集的闭包
-Items Parser::getClousureofItems(Items items)
+void Parser::getClousureofItems(Items& items)
 {
 	int change;
 	do {
@@ -259,5 +306,38 @@ Items Parser::getClousureofItems(Items items)
 		}
 	} while (change);
 
-	return items;
+}
+
+
+void Parser::inputBNF(const char* BNFPath)
+{
+	ifstream fin;
+	fin.open(BNFPath);
+	if (fin.fail()) {
+		cout << "Could not open BNF file!" << endl;
+		exit(0);
+	}
+	fin >> blank >> extendStartNonterminal >> end >> spliter;
+	int tokenNum;
+	fin >> tokenNum;
+	
+	for (int i = 0; i < tokenNum; i++) {
+		string tmp;
+		fin >> tmp;
+		terminal.push_back(tmp);
+	}
+	fin.ignore();
+	string line;
+	while (getline(fin, line)) {
+		if (line.size() == 0) continue;
+		vector<string> tmp = split(line, spliter);
+		string tmp_l = tmp[0];
+		string tmp_r = tmp[1];
+		Production tmp_prod;
+		tmp_prod.left = split(tmp_l, " ")[0];
+		tmp_prod.right = split(tmp_r, " ");
+		prods.push_back(tmp_prod);
+	}
+	fin.close();
+
 }
