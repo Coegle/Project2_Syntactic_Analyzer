@@ -13,6 +13,7 @@ int main() {
 	p.inputBNF("testII.txt");
 	p.getFirstSetofNonterminal();
 	p.creatTable();
+	p.outputTable("gotolist.txt", "actionlist.txt");
 	p.parse("testresult.txt");
 	return 0;
 }

@@ -2,7 +2,7 @@ $
 program
 #
 ->
-26
+27
 [ ] ( ) { } , ; + =
 < > <= >= == != - * / id
 if else num int void while return
@@ -38,7 +38,7 @@ compound-stmt -> { local-declarations statement-list }
 local-declarations -> local-declarations var-declaration
 local-declarations -> $
 
-statement-list -> statement-list statement
+statement-list -> statement-list matched-stmt
 statement-list -> $
 
 statement -> matched-stmt
@@ -60,7 +60,7 @@ expression-stmt -> ;
 
 
 
-iteration-stmt -> while ( expression ) statement
+iteration-stmt -> while ( expression ) matched-stmt
 
 return-stmt -> return ;
 return-stmt -> return expression ;

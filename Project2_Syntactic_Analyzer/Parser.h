@@ -77,5 +77,7 @@ public:
 	Items getNextItems(Items& preItems, string token);
 	void getClousureofItems(Items& items); // 求项目集的闭包
 	void inputBNF(const char* BNFPath); // 输入文法的二型文法
+	void outputTable(const char* gotoListPath, const char* actionListPath);
+	void inputTable(const char* gotoListPath, const char* actionListPath);
 };
 

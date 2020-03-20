@@ -68,7 +68,9 @@ void Parser::getFirstSetofNonterminal() {
 		change = 0;
 		for (auto it_prod = prods.begin(); it_prod != prods.end(); it_prod++) {
 			auto it1 = it_prod->right.begin(); // 产生式右部
-			if (*it1 == blank) continue;
+			if (*it1 == blank) {
+				continue;
+			}
 			while (it1 != it_prod->right.end()) {
 				if (isTerminal(*it1)) { // 是终结符
 					if (firstofNonterminal[it_prod->left].count(*it1) == 0) {
@@ -340,4 +342,59 @@ void Parser::inputBNF(const char* BNFPath)
 	}
 	fin.close();
 
+}
+// 从文件读入action和goto表
+void Parser::inputTable(const char* gotoListPath, const char* actionListPath)
+{
+	ifstream fingoto(gotoListPath, std::ios::in);
+	int num;
+	fingoto >> num;
+	for (int i = 0; i < num; i++) {
+		int num1, state;
+		fingoto >> state >> num1;
+		for (int j = 0; j < num1; j++) {
+			string input;
+			int gotostate;
+			fingoto >> input >> gotostate;
+			gotoList[state][input] = gotostate;
+		}
+	}
+	fingoto.close();
+
+	ifstream finaction(actionListPath, std::ios::in);
+	finaction >> num;
+	for (int i = 0; i < num; i++) {
+		int num1, state;
+		finaction >> state >> num1;
+		for (int j = 0; j < num1; j++) {
+			string input;
+			int s1, s2;
+			finaction >> input >> s1 >> s2;
+			actionList[state][input] = make_pair(s1, s2);
+		}
+	}
+}
+
+// 输出action和goto表
+void Parser::outputTable(const char* gotoListPath, const char* actionListPath)
+{
+	ofstream writer(gotoListPath, std::ios::app);
+	writer << gotoList.size() << endl;
+	for (auto it = gotoList.begin(); it != gotoList.end(); it++) {
+		writer << it->first << " " << it->second.size() << endl;
+		for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+			writer << it2->first << " " << it2->second << endl;
+		}
+	}
+	writer.close();
+
+	ofstream writer1(actionListPath, std::ios::app);
+	writer1 << actionList.size() << endl;
+	for (auto it = actionList.begin(); it != actionList.end(); it++) {
+		writer1 << it->first << " " << it->second.size() << endl;
+		for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+			writer1 << it2->first << " " << it2->second.first << " " << it2->second.second << endl;
+		}
+	}
+	writer1.close();
 }
