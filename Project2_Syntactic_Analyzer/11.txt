@@ -149,16 +149,19 @@ direct_abstract_declarator := ( )
 
 typedef_name := id
 
-stat := labeled_stat
-stat := exp_stat
-stat := compound_stat
-stat := selection_stat
-stat := iteration_stat
-stat := jump_stat
+stat := matched_stat
+stat := open_stat
 
-labeled_stat := id : stat
-labeled_stat := case const_exp : stat
-labeled_stat := default : stat
+matched_stat := selection_matched_stat
+matched_stat := labeled_stat
+matched_stat := exp_stat
+matched_stat := compound_stat
+matched_stat := iteration_stat
+matched_stat := jump_stat
+
+labeled_stat := id : matched_stat
+labeled_stat := case const_exp : matched_stat
+labeled_stat := default : matched_stat
 
 exp_stat := exp ;
 exp_stat := ;
@@ -168,23 +171,25 @@ compound_stat := { stat_list }
 compound_stat := { decl_list }
 compound_stat := { }
 
-stat_list := stat
-stat_list := stat_list stat
+stat_list := matched_stat
+stat_list := stat_list matched_stat
 
-selection_stat := if ( exp ) stat
-selection_stat := if ( exp ) stat else stat
-selection_stat := switch ( exp ) stat
+selection_matched_stat := if ( exp ) matched_stat else matched_stat
+selection_matched_stat := switch ( exp ) matched_stat
 
-iteration_stat := while ( exp ) stat
-iteration_stat := do stat while ( exp ) ;
-iteration_stat := for ( exp ; exp ; exp ) stat
-iteration_stat := for ( exp ; exp ; ) stat
-iteration_stat := for ( exp ; ; exp ) stat
-iteration_stat := for ( exp ; ; ) stat
-iteration_stat := for ( ; exp ; exp ) stat
-iteration_stat := for ( ; exp ; ) stat
-iteration_stat := for ( ; ; exp ) stat
-iteration_stat := for ( ; ; ) stat
+open_stat := if ( exp ) stat
+open_stat := if ( exp ) matched_stat else open_stat
+
+iteration_stat := while ( exp ) matched_stat
+iteration_stat := do matched_stat while ( exp ) ;
+iteration_stat := for ( exp ; exp ; exp ) matched_stat
+iteration_stat := for ( exp ; exp ; ) matched_stat
+iteration_stat := for ( exp ; ; exp ) matched_stat
+iteration_stat := for ( exp ; ; ) matched_stat
+iteration_stat := for ( ; exp ; exp ) matched_stat
+iteration_stat := for ( ; exp ; ) matched_stat
+iteration_stat := for ( ; ; exp ) matched_stat
+iteration_stat := for ( ; ; ) matched_stat
 
 jump_stat := goto id ;
 jump_stat := continue ;

@@ -12,9 +12,9 @@ int main() {
 
 	p.inputBNF("11.txt");
 	p.getFirstSetofNonterminal();
-	//p.creatTable();
-	//p.outputTable("gotolist.txt", "actionlist.txt");
-	p.inputTable("gotolist.txt", "actionlist.txt");
+	p.creatTable();
+	p.outputTable("gotolist.txt", "actionlist.txt");
+	//p.inputTable("gotolist.txt", "actionlist.txt");
 	p.parse("result.txt");
 	return 0;
 }
