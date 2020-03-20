@@ -2,8 +2,10 @@
 #include <set>
 #include <algorithm>
 #include <fstream>
+#include <queue>
 #include "Parser.h"
 #include <iostream>
+using namespace std;
 //字符串分割函数
 std::vector<std::string> split(std::string str, std::string pattern)
 {
@@ -142,17 +144,39 @@ void Parser::creatTable()
 	getClousureofItems(itms_tmp);
 	itemsList.push_back(itms_tmp);
 
-	for (int i = 0; i<itemsList.size(); i++) { // 对于任一项目集
+	queue<int> q;
+	q.push(0);
+	while (q.size())
+	{
+		int i = q.front();
+		q.pop();
+
 		for (int j = 0; j < terminal.size(); j++) { // 对于所有终结符
 			Items nextItms = getNextItems(itemsList[i], terminal[j]);
 			if (nextItms.items.size() == 0) continue;
 			auto hasExisted = find(itemsList.begin(), itemsList.end(), nextItms); // 是否已经存在
 			if (hasExisted == itemsList.end()) {
 				itemsList.push_back(nextItms);
+				q.push(itemsList.size() - 1);
 				// shift
 				actionList[i][terminal[j]] = make_pair(SHIFT, itemsList.size() - 1);
 			}
 			else {
+				int change = 0;
+				for (auto it_in = nextItms.items.begin(); it_in != nextItms.items.end(); it_in++) {
+
+					auto it_it = find(hasExisted->items.begin(), hasExisted->items.end(), *it_in);
+					int tmp_size = it_it->token.size();
+					it_it->token.insert(it_in->token.begin(), it_in->token.end());
+
+					if (it_it->token.size() != tmp_size) {
+						change = 1;
+						
+					}
+				}
+				if (change) {
+					q.push(hasExisted - itemsList.begin());
+				}
 				actionList[i][terminal[j]] = make_pair(SHIFT, hasExisted - itemsList.begin());
 			}
 		}
@@ -162,13 +186,33 @@ void Parser::creatTable()
 			auto hasExisted = find(itemsList.begin(), itemsList.end(), nextItms); // 是否已经存在
 			if (hasExisted == itemsList.end()) {
 				itemsList.push_back(nextItms);
+				q.push(itemsList.size() - 1);
 				// goto
 				gotoList[i][it_nontml->first] = itemsList.size() - 1;
-			} else {
+			}
+			else {
+				int change = 0;
+				for (auto it_in = nextItms.items.begin(); it_in != nextItms.items.end(); it_in++) {
+
+					auto it_it = find(hasExisted->items.begin(), hasExisted->items.end(), *it_in);
+					int tmp_size = it_it->token.size();
+					it_it->token.insert(it_in->token.begin(), it_in->token.end());
+
+					if (it_it->token.size() != tmp_size) {
+						change = 1;
+					}
+				}
+				if (change) {
+					q.push(hasExisted - itemsList.begin());
+				}
 				gotoList[i][it_nontml->first] = hasExisted - itemsList.begin();
 			}
-			
 		}
+	}
+	for (int i = 0; i < itemsList.size(); i++) { // 对于任一项目集
+		
+	}
+	for (int i = 0; i < itemsList.size(); i++) {
 		// acc 和 reduce
 		for (auto index = itemsList[i].indexofReducedItems.begin(); index != itemsList[i].indexofReducedItems.end(); index++) { // 所有规约项目
 			for (auto it_token = itemsList[i].items[*index].token.begin(); it_token != itemsList[i].items[*index].token.end(); it_token++) {
@@ -291,16 +335,16 @@ void Parser::getClousureofItems(Items& items)
 						change = 1;
 					}
 					/*以下内容应该被注释，否则会变成LALR（1）同时应该更改Item中判定相等的条件*/
-					//else { // 存在但first集不是子集
-					//	set<string> tokenUnion = hasExisted->token;
-					//	tokenUnion.insert(tmp.token.begin(), tmp.token.end());
-					//	
-					//	if (tokenUnion != hasExisted->token) {
-					//		hasExisted->token.insert(tmp.token.begin(), tmp.token.end());
-					//		change = 1;
-					//	}
-					//	
-					//}
+					else { // 存在但first集不是子集
+						set<string> tokenUnion = hasExisted->token;
+						tokenUnion.insert(tmp.token.begin(), tmp.token.end());
+						
+						if (tokenUnion != hasExisted->token) {
+							hasExisted->token.insert(tmp.token.begin(), tmp.token.end());
+							change = 1;
+						}
+						
+					}
 				}
 			}
 		}
@@ -340,4 +384,61 @@ void Parser::inputBNF(const char* BNFPath)
 	}
 	fin.close();
 
+}
+
+
+// 从文件读入action和goto表
+void Parser::inputTable(const char* gotoListPath, const char* actionListPath)
+{
+	ifstream fingoto(gotoListPath, std::ios::in);
+	int num;
+	fingoto >> num;
+	for (int i = 0; i < num; i++) {
+		int num1, state;
+		fingoto >> state >> num1;
+		for (int j = 0; j < num1; j++) {
+			string input;
+			int gotostate;
+			fingoto >> input >> gotostate;
+			gotoList[state][input] = gotostate;
+		}
+	}
+	fingoto.close();
+
+	ifstream finaction(actionListPath, std::ios::in);
+	finaction >> num;
+	for (int i = 0; i < num; i++) {
+		int num1, state;
+		finaction >> state >> num1;
+		for (int j = 0; j < num1; j++) {
+			string input;
+			int s1, s2;
+			finaction >> input >> s1 >> s2;
+			actionList[state][input] = make_pair(s1, s2);
+		}
+	}
+}
+
+// 输出action和goto表
+void Parser::outputTable(const char* gotoListPath, const char* actionListPath)
+{
+	ofstream writer(gotoListPath, std::ios::app);
+	writer << gotoList.size() << endl;
+	for (auto it = gotoList.begin(); it != gotoList.end(); it++) {
+		writer << it->first << " " << it->second.size() << endl;
+		for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+			writer << it2->first << " " << it2->second << endl;
+		}
+	}
+	writer.close();
+
+	ofstream writer1(actionListPath, std::ios::app);
+	writer1 << actionList.size() << endl;
+	for (auto it = actionList.begin(); it != actionList.end(); it++) {
+		writer1 << it->first << " " << it->second.size() << endl;
+		for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+			writer1 << it2->first << " " << it2->second.first << " " << it2->second.second << endl;
+		}
+	}
+	writer1.close();
 }

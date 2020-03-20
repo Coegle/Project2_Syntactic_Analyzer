@@ -25,7 +25,7 @@ struct Item // 项目
 	int dot; // 下一个要移进的符号的下标
 	set<string> token;
 	bool operator == (const Item &itm) const {
-		if (prod != itm.prod || dot != itm.dot || token != itm.token) return false;
+		if (prod != itm.prod || dot != itm.dot) return false;
 		return true;
 	}
 	bool operator != (const Item& itm) const {
@@ -77,5 +77,9 @@ public:
 	Items getNextItems(Items& preItems, string token);
 	void getClousureofItems(Items& items); // 求项目集的闭包
 	void inputBNF(const char* BNFPath); // 输入文法的二型文法
+										// 从文件读入action和goto表
+	void inputTable(const char* gotoListPath, const char* actionListPath);
+	// 输出action和goto表
+	void outputTable(const char* gotoListPath, const char* actionListPath);
 };
 

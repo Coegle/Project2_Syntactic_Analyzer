@@ -10,8 +10,8 @@ int_const char_const float_const id string complex_const ( ) { }
 ^ / % = * ! ^= /= %= ==
 *= != break continue return case char int if switch
 for void float double short long unsigned signed do while
-else sizeof goto default struct union const volatile
-typedef static auto register extern
+else sizeof goto default struct union const volatile typedef static
+auto register extern
 
 S' := translation_unit
 
@@ -280,15 +280,14 @@ postfix_exp := postfix_exp ++
 postfix_exp := postfix_exp --
 
 primary_exp := id
-primary_exp := const
+primary_exp := _const
 primary_exp := string
 primary_exp := ( exp )
-primary_exp := string
 
 argument_exp_list := assignment_exp
 argument_exp_list := argument_exp_list , assignment_exp
 
-const := int_const
-const := complex_const
-const := float_const
-const := char_const
+_const := int_const
+_const := complex_const
+_const := float_const
+_const := char_const
