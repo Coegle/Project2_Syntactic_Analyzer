@@ -250,7 +250,7 @@ Items Parser::getNextItems(Items& preItems, string token)
 			tmp.prod = it_itm->prod;
 			tmp.dot = it_itm->dot + 1;
 			tmp.token = it_itm->token;
-			if (tmp.dot >= tmp.prod.right.size()) { // 规约项目标记
+			if (tmp.dot >= tmp.prod.right.size() || (tmp.prod.right.size() == 1 && tmp.prod.right[0] == blank)) { // 规约项目标记
 				nextItms.indexofReducedItems.insert(nextItms.items.size());
 			}
 			
