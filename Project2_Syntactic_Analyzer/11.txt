@@ -2,7 +2,7 @@ $
 S'
 #
 :=
-83
+86
 int_const char_const float_const id string complex_const ( ) { }
 [ ] ; , < > <= >= << >>
 <<= >>= . ... - + -= += ++ --
@@ -11,7 +11,7 @@ int_const char_const float_const id string complex_const ( ) { }
 *= != break continue return case char int if switch
 for void float double short long unsigned signed do while
 else sizeof goto default struct union const volatile typedef static
-auto register extern
+auto register extern bool true false
 
 S' := translation_unit
 
@@ -296,3 +296,5 @@ _const := int_const
 _const := complex_const
 _const := float_const
 _const := char_const
+_const := true
+_const := false
