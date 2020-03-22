@@ -1,11 +1,7 @@
 1 int int
 1 id gcd
 1 ( (
-1 int int
-1 id u
-1 , ,
-1 int int
-1 id v
+1 void void
 1 ) )
 2 { {
 2 if if
@@ -30,6 +26,7 @@
 3 id v
 3 * *
 3 id v
-3 } }
+3 ) )
 3 ; ;
 4 } }
+0 # #

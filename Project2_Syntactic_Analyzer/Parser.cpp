@@ -30,7 +30,7 @@ std::vector<std::string> split(std::string str, std::string pattern)
 // 求非终结符的first集
 void Parser::getFirstSetofNonterminal() {
 	int change = 0;
-	
+	firstofNonterminal[blank].insert(blank);
 	for (auto it = prods.begin(); it != prods.end(); it++) {
 		if (it->right.size() == 1 && it->right[0] == blank) {
 			canBeBlank[it->left] = true;
@@ -72,6 +72,7 @@ void Parser::getFirstSetofNonterminal() {
 				continue;
 			}
 			while (it1 != it_prod->right.end()) {
+
 				if (isTerminal(*it1)) { // 是终结符
 					if (firstofNonterminal[it_prod->left].count(*it1) == 0) {
 						firstofNonterminal[it_prod->left].insert(*it1);
@@ -116,10 +117,16 @@ set<string> Parser::getFirstSetofStrings(vector<string>& strings)
 			firstSet.insert(*it);
 			break;
 		}
-		for (auto it2 = firstofNonterminal[*it].begin(); it2 != firstofNonterminal[*it].end(); it2++) {
-			firstSet.insert(*it2);
+		firstSet.insert(firstofNonterminal[*it].begin(), firstofNonterminal[*it].end());
+		if (firstSet.count(blank) != 0) {
+			firstSet.erase(blank);
 		}
-		if (canBeBlank[*it] == false) break;
+		if (canBeBlank[*it] == false) { 
+			break;
+		}
+		if (it - strings.begin() + 1 == strings.size() && canBeBlank[*it] == true) {// 是最后一项且可以推出空
+			firstSet.insert(blank);
+		}
 		it++;
 	}
 	return firstSet;
@@ -145,6 +152,7 @@ void Parser::creatTable()
 	itemsList.push_back(itms_tmp);
 
 	for (int i = 0; i<itemsList.size(); i++) { // 对于任一项目集
+
 		for (int j = 0; j < terminal.size(); j++) { // 对于所有终结符
 			Items nextItms = getNextItems(itemsList[i], terminal[j]);
 			if (nextItms.items.size() == 0) continue;
@@ -217,9 +225,12 @@ void Parser::parse(const char* tokenListPath)
 			return;
 		case REDUCE:
 			reducedProd = prods[action.second];
-			for (int i = 0; i < reducedProd.right.size(); i++) {
-				stateStack.pop();
-				symbolStack.pop();
+			if (reducedProd.right.size() == 1 && reducedProd.right[0] == blank) {
+			} else {
+				for (int i = 0; i < reducedProd.right.size(); i++) {
+					stateStack.pop();
+					symbolStack.pop();
+				}
 			}
 			symbolStack.push(reducedProd.left);
 			stateStack.push(gotoList[stateStack.top()][symbolStack.top()]);
@@ -252,7 +263,7 @@ Items Parser::getNextItems(Items& preItems, string token)
 			tmp.prod = it_itm->prod;
 			tmp.dot = it_itm->dot + 1;
 			tmp.token = it_itm->token;
-			if (tmp.dot >= tmp.prod.right.size() || (tmp.prod.right.size() == 1 && tmp.prod.right[0] == blank)) { // 规约项目标记
+			if (tmp.dot >= tmp.prod.right.size()) { // 规约项目标记
 				nextItms.indexofReducedItems.insert(nextItms.items.size());
 			}
 			
@@ -271,11 +282,18 @@ void Parser::getClousureofItems(Items& items)
 	do {
 		change = 0;
 		for (int i = 0; i < items.items.size(); i++) { // 对于每一项
-			if (items.items[i].prod.right.size() > items.items[i].dot&& firstofNonterminal.find(items.items[i].prod.right[items.items[i].dot]) != firstofNonterminal.end()) { // 如果是非终结符
+			if (items.items[i].prod.right.size() > items.items[i].dot && firstofNonterminal.find(items.items[i].prod.right[items.items[i].dot]) != firstofNonterminal.end()) { // 如果是非终结符
 				for (int prod = 0; prod < prods.size(); prod++) {
 					if (prods[prod].left != items.items[i].prod.right[items.items[i].dot]) continue;
 					Item tmp;
-					tmp.dot = 0;
+					int flag = 0; // 记录是否有空产生式带来的规约项目
+					if (prods[prod].right.size() == 1 && prods[prod].right[0] == blank) { // 空产生式直接变为规约项目
+						tmp.dot = 1;
+						flag = 1;
+					}
+					else {
+						tmp.dot = 0;
+					}
 					tmp.prod = prods[prod];
 					vector<string>tmp_token;
 					if (items.items[i].prod.right.begin() + items.items[i].dot + 1 != items.items[i].prod.right.end()) { // beta
@@ -290,19 +308,11 @@ void Parser::getClousureofItems(Items& items)
 					auto hasExisted = find(items.items.begin(), items.items.end(), tmp); // 项目是否存在
 					if (hasExisted == items.items.end()) { // 不存在
 						items.items.push_back(tmp);
+						if (flag == 1) { // 空产生式的规约项目
+							items.indexofReducedItems.insert(items.items.size() - 1);
+						}
 						change = 1;
 					}
-					/*以下内容应该被注释，否则会变成LALR（1）同时应该更改Item中判定相等的条件*/
-					//else { // 存在但first集不是子集
-					//	set<string> tokenUnion = hasExisted->token;
-					//	tokenUnion.insert(tmp.token.begin(), tmp.token.end());
-					//	
-					//	if (tokenUnion != hasExisted->token) {
-					//		hasExisted->token.insert(tmp.token.begin(), tmp.token.end());
-					//		change = 1;
-					//	}
-					//	
-					//}
 				}
 			}
 		}
@@ -347,6 +357,10 @@ void Parser::inputBNF(const char* BNFPath)
 void Parser::inputTable(const char* gotoListPath, const char* actionListPath)
 {
 	ifstream fingoto(gotoListPath, std::ios::in);
+	if (fingoto.fail()) {
+		cout << "Could not open gotolist file!" << endl;
+		exit(0);
+	}
 	int num;
 	fingoto >> num;
 	for (int i = 0; i < num; i++) {
@@ -362,6 +376,10 @@ void Parser::inputTable(const char* gotoListPath, const char* actionListPath)
 	fingoto.close();
 
 	ifstream finaction(actionListPath, std::ios::in);
+	if (finaction.fail()) {
+		cout << "Could not open actionlist file!" << endl;
+		exit(0);
+	}
 	finaction >> num;
 	for (int i = 0; i < num; i++) {
 		int num1, state;
@@ -373,6 +391,7 @@ void Parser::inputTable(const char* gotoListPath, const char* actionListPath)
 			actionList[state][input] = make_pair(s1, s2);
 		}
 	}
+	finaction.close();
 }
 
 // 输出action和goto表
