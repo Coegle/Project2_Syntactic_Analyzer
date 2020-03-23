@@ -10,11 +10,11 @@ int main() {
 
 
 
-	p.inputBNF("testII.txt");
+	p.inputBNF("Chomsky_II.txt");
 	p.getFirstSetofNonterminal();
-	p.creatTable();
-	//p.inputTable("gotolist.txt", "actionlist");
-	p.outputTable("gotolist.txt", "actionlist.txt");
+	//p.creatTable();
+	p.inputTable("gotolist.txt", "actionlist.txt");
+	//p.outputTable("gotolist.txt", "actionlist.txt");
  	p.parse("testresult.txt");
 	return 0;
 }
