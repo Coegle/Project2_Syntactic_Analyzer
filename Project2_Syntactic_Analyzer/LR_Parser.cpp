@@ -1,30 +1,9 @@
 #include "LR_Parser.h"
+#include "libs.h"
 #include <set>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-//字符串分割函数
-std::vector<std::string> split(std::string str, std::string pattern)
-{
-	std::string::size_type pos;
-	std::vector<std::string> result;
-	str += pattern;//扩展字符串以方便操作
-	int size = str.size();
-
-	for (int i = 0; i < size; i++)
-	{
-		pos = str.find(pattern, i);
-		if (pos < size)
-		{
-			std::string s = str.substr(i, pos - i);
-			i = pos + pattern.size() - 1;
-			if (s.size() != 0) {
-				result.push_back(s);
-			}
-		}
-	}
-	return result;
-}
 
 // 求非终结符的first集
 void LR_Parser::getFirstSetofNonterminal() {
@@ -135,8 +114,8 @@ set<string> LR_Parser::getFirstSetofStrings(vector<string>& strings)
 void LR_Parser::creatTable()
 {
 	
-	Items itms_tmp;
-	Item itm_tmp;
+	LRItems itms_tmp;
+	LRItem itm_tmp;
 	// 添加初始结点
 	for (auto it_prod = prods.begin(); it_prod != prods.end(); it_prod++) {
 		if (it_prod->left == extendStartNonterminal) {
@@ -153,7 +132,7 @@ void LR_Parser::creatTable()
 	for (int i = 0; i<itemsList.size(); i++) { // 对于任一项目集
 
 		for (int j = 0; j < terminal.size(); j++) { // 对于所有终结符
-			Items nextItms = getNextItems(itemsList[i], terminal[j]);
+			LRItems nextItms = getNextItems(itemsList[i], terminal[j]);
 			if (nextItms.items.size() == 0) continue;
 			auto hasExisted = find(itemsList.begin(), itemsList.end(), nextItms); // 是否已经存在
 			if (hasExisted == itemsList.end()) {
@@ -166,7 +145,7 @@ void LR_Parser::creatTable()
 			}
 		}
 		for (auto it_nontml = firstofNonterminal.begin(); it_nontml != firstofNonterminal.end(); it_nontml++) { // 对所有非终结符
-			Items nextItms = getNextItems(itemsList[i], it_nontml->first);
+			LRItems nextItms = getNextItems(itemsList[i], it_nontml->first);
 			if (nextItms.items.size() == 0) continue;
 			auto hasExisted = find(itemsList.begin(), itemsList.end(), nextItms); // 是否已经存在
 			if (hasExisted == itemsList.end()) {
@@ -252,13 +231,13 @@ void LR_Parser::parse(const char* tokenListPath)
 }
 
 // 求下一个项目集
-Items LR_Parser::getNextItems(Items& preItems, string token)
+LRItems LR_Parser::getNextItems(LRItems& preItems, string token)
 {
-	Items nextItms;
+	LRItems nextItms;
 	for (auto it_itm = preItems.items.begin(); it_itm != preItems.items.end(); it_itm++) {
 		if (it_itm->prod.right.size() > it_itm->dot && it_itm->prod.right[it_itm->dot] == token) { // 不是规约项或接受项，且下一个移进符号符合要求
 			
-			Item tmp; // 待移入的项目
+			LRItem tmp; // 待移入的项目
 			tmp.prod = it_itm->prod;
 			tmp.dot = it_itm->dot + 1;
 			tmp.token = it_itm->token;
@@ -275,7 +254,7 @@ Items LR_Parser::getNextItems(Items& preItems, string token)
 }
 
 // 求项目集的闭包
-void LR_Parser::getClousureofItems(Items& items)
+void LR_Parser::getClousureofItems(LRItems& items)
 {
 	int change;
 	do {
@@ -284,7 +263,7 @@ void LR_Parser::getClousureofItems(Items& items)
 			if (items.items[i].prod.right.size() > items.items[i].dot && firstofNonterminal.find(items.items[i].prod.right[items.items[i].dot]) != firstofNonterminal.end()) { // 如果是非终结符
 				for (int prod = 0; prod < prods.size(); prod++) {
 					if (prods[prod].left != items.items[i].prod.right[items.items[i].dot]) continue;
-					Item tmp;
+					LRItem tmp;
 					int flag = 0; // 记录是否有空产生式带来的规约项目
 					if (prods[prod].right.size() == 1 && prods[prod].right[0] == blank) { // 空产生式直接变为规约项目
 						tmp.dot = 1;
@@ -391,6 +370,28 @@ void LR_Parser::inputTable(const char* gotoListPath, const char* actionListPath)
 		}
 	}
 	finaction.close();
+}
+
+vector<string> LR_Parser::split(string str, string pattern)
+{
+	string::size_type pos;
+	vector<std::string> result;
+	str += pattern;//扩展字符串以方便操作
+	int size = str.size();
+
+	for (int i = 0; i < size; i++)
+	{
+		pos = str.find(pattern, i);
+		if (pos < size)
+		{
+			string s = str.substr(i, pos - i);
+			i = pos + pattern.size() - 1;
+			if (s.size() != 0) {
+				result.push_back(s);
+			}
+		}
+	}
+	return result;
 }
 
 // 输出action和goto表
