@@ -1,9 +1,8 @@
-#include "Parser.h"
+#include "LALR_Parser.h"
 #include <set>
 #include <algorithm>
 #include <fstream>
 #include <queue>
-#include "Parser.h"
 #include <iostream>
 using namespace std;
 //字符串分割函数
@@ -30,7 +29,7 @@ std::vector<std::string> split(std::string str, std::string pattern)
 }
 
 // 求非终结符的first集
-void Parser::getFirstSetofNonterminal() {
+void LALR_Parser::getFirstSetofNonterminal() {
 	int change = 0;
 	firstofNonterminal[blank].insert(blank);
 	for (auto it = prods.begin(); it != prods.end(); it++) {
@@ -100,7 +99,7 @@ void Parser::getFirstSetofNonterminal() {
 }
 
 // 判断是否是终结符
-bool Parser::isTerminal(string& s)
+bool LALR_Parser::isTerminal(string& s)
 {
 	if (find(terminal.begin(), terminal.end(), s) == terminal.end()) {
 		return false;
@@ -109,7 +108,7 @@ bool Parser::isTerminal(string& s)
 }
 
 // 求string的first集
-set<string> Parser::getFirstSetofStrings(vector<string>& strings)
+set<string> LALR_Parser::getFirstSetofStrings(vector<string>& strings)
 {
 	set<string> firstSet;
 	auto it = strings.begin(); // 右侧第一项
@@ -134,7 +133,7 @@ set<string> Parser::getFirstSetofStrings(vector<string>& strings)
 }
 
 // 进行语法分析形成Action和Goto表
-void Parser::creatTable()
+void LALR_Parser::creatTable()
 {
 	
 	Items itms_tmp;
@@ -236,7 +235,7 @@ void Parser::creatTable()
 	}
 }
 
-void Parser::parse(const char* tokenListPath) 
+void LALR_Parser::parse(const char* tokenListPath) 
 {
 	ifstream fin;
 	fin.open(tokenListPath);
@@ -296,7 +295,7 @@ void Parser::parse(const char* tokenListPath)
 }
 
 // 求下一个项目集
-Items Parser::getNextItems(Items& preItems, string token)
+Items LALR_Parser::getNextItems(Items& preItems, string token)
 {
 	Items nextItms;
 	for (auto it_itm = preItems.items.begin(); it_itm != preItems.items.end(); it_itm++) {
@@ -319,7 +318,7 @@ Items Parser::getNextItems(Items& preItems, string token)
 }
 
 // 求项目集的闭包
-void Parser::getClousureofItems(Items& items)
+void LALR_Parser::getClousureofItems(Items& items)
 {
 	int change;
 	do {
@@ -375,7 +374,7 @@ void Parser::getClousureofItems(Items& items)
 }
 
 
-void Parser::inputBNF(const char* BNFPath)
+void LALR_Parser::inputBNF(const char* BNFPath)
 {
 	ifstream fin;
 	fin.open(BNFPath);
@@ -410,7 +409,7 @@ void Parser::inputBNF(const char* BNFPath)
 
 
 // 从文件读入action和goto表
-void Parser::inputTable(const char* gotoListPath, const char* actionListPath)
+void LALR_Parser::inputTable(const char* gotoListPath, const char* actionListPath)
 {
 	ifstream fingoto(gotoListPath, std::ios::in);
 	if (fingoto.fail()) {
@@ -451,7 +450,7 @@ void Parser::inputTable(const char* gotoListPath, const char* actionListPath)
 }
 
 // 输出action和goto表
-void Parser::outputTable(const char* gotoListPath, const char* actionListPath)
+void LALR_Parser::outputTable(const char* gotoListPath, const char* actionListPath)
 {
 	ofstream writer(gotoListPath, std::ios::app);
 	writer << gotoList.size() << endl;

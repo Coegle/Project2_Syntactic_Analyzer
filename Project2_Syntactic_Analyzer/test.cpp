@@ -2,19 +2,18 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "Parser.h"
+#include "LALR_Parser.h"
 using namespace std;
 
 int main() {
-	Parser p;
+	LALR_Parser lalr_p;
 
 
-
-	p.inputBNF("Chomsky_II.txt");
-	p.getFirstSetofNonterminal();
-	//p.creatTable();
-	//p.outputTable("gotolist.txt", "actionlist.txt");
-	p.inputTable("gotolist.txt", "actionlist.txt");
-	p.parse("testresult.txt");
+	lalr_p.inputBNF("LALR(1)\\Chomsky_II.txt");
+	lalr_p.getFirstSetofNonterminal();
+	//lalr_p.creatTable();
+	//lalr_p.outputTable("gotolist.txt", "actionlist.txt");
+	lalr_p.inputTable("LALR(1)\\gotolist.txt", "LALR(1)\\actionlist.txt");
+	lalr_p.parse("LALR(1)\\testresult.txt");
 	return 0;
 }

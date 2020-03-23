@@ -18,12 +18,12 @@
     <ClCompile Include="test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Parser.cpp">
+    <ClCompile Include="LALR_Parser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Parser.h">
+    <ClInclude Include="LALR_Parser.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
