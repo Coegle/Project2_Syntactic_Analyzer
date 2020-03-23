@@ -49,7 +49,7 @@ std::vector<std::string> split(std::string str, std::string pattern);
 const int ACC = 1;
 const int SHIFT = 2;
 const int REDUCE = 3;
-class Parser
+class LR_Parser
 {
 
 public:
